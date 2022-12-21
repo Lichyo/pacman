@@ -225,14 +225,16 @@ public class game extends JPanel implements ActionListener{
 			
 			Graphics2D graphics2D=(Graphics2D) graphics;
 			
+			run();
+			drawlevel(graphics2D,leveldata);		//畫出地圖
 			try{
 				Thread.sleep(80);
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
-			run();
 			
-			drawlevel(graphics2D,leveldata);		//畫出地圖
+			
+			
 			drawscorebar();
 			
 			drawpacman();
@@ -249,6 +251,7 @@ public class game extends JPanel implements ActionListener{
 		public void eatdot(){							//需修改
 	
 			Graphics g=getGraphics();
+			
 			if((leveldata[positionx+20*(positiony-1)-1]&16)!=0){
 				leveldata[positionx+20*(positiony-1)-1]=leveldata[positionx+20*(positiony-1)-1]-16+32;	//清除白點，並紀錄此處原本有白點
 				score=score+1;
@@ -270,8 +273,7 @@ public class game extends JPanel implements ActionListener{
          */
         
         public void run(){				//移動			//判定有誤
-        	//repaint();					//停止閃爍
- 
+         
         	if(p_up&&!p_down&&!p_left&&!p_right){				//上			
         		 
         		 if(!((leveldata[positionx+20*(positiony-1)-1]&1)>0)||(y-offsety)%blocksize>0){
@@ -282,7 +284,7 @@ public class game extends JPanel implements ActionListener{
 					
 					y=y-speed;		
 	 				if(((y-offsety)%blocksize)==(blocksize/3)){
-	 					System.out.println("上");
+	 		//			System.out.println("上");
 	 					positiony=positiony-1;
 	 				}
 				}
@@ -294,7 +296,7 @@ public class game extends JPanel implements ActionListener{
 	 				
 	 				y=y+speed;
 	 				if(((y-offsety)%blocksize)==(2*blocksize/3)){			//判斷現在格子
-	 					System.out.println("下");
+	 		//			System.out.println("下");
 	 					positiony=positiony+1;
 	 				}
  					
@@ -307,7 +309,7 @@ public class game extends JPanel implements ActionListener{
 					
 					x=x-speed;
 					if(((x-offsetx)%blocksize)==(blocksize/3)){
-						System.out.println("左");
+			//			System.out.println("左");
 	 					positionx=positionx-1;
 	 				}	
 				}
@@ -319,11 +321,12 @@ public class game extends JPanel implements ActionListener{
 					
 					x=x+speed;
 					if(((x-offsetx)%blocksize)==(2*blocksize/3)){
-						System.out.println("右");
+			//			System.out.println("右");
 	 					positionx=positionx+1;
 	 				}
 				}
         	}
+        	eatdot();
         	lab.setLocation(x,y);	
         }
         
@@ -335,8 +338,8 @@ public class game extends JPanel implements ActionListener{
 			
 		}
 		@Override
-		public void keyPressed(KeyEvent e){						//鍵盤延遲待解決 -->https://blog.csdn.net/sangjinchao/article/details/60584630
-			eatdot();
+		public void keyPressed(KeyEvent e){					
+			
 			
  			if(e.getKeyCode()==KeyEvent.VK_DOWN){			//按下下方向鍵時	
 				p_down=true;
@@ -350,8 +353,7 @@ public class game extends JPanel implements ActionListener{
 				gamestart();
 			}
 			
-			
-			
+				
 			
  			System.out.println("x"+x+"y"+y);
  			System.out.println("x"+positionx+"y"+positiony+"["+(positionx+20*(positiony-1)-1)+"]");
@@ -361,7 +363,6 @@ public class game extends JPanel implements ActionListener{
 	 	
 	 	@Override
 		public void keyReleased(KeyEvent e) {
-			
 			if(e.getKeyCode()==KeyEvent.VK_DOWN){			//按下下方向鍵時
 				p_down=false;
  				
