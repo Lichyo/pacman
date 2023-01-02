@@ -11,15 +11,12 @@ import java.lang.Object;
 
 
 public class game extends JPanel implements ActionListener{
-	
 
-		
-		//Timer timer = new Timer();
-		
 		private final Font fnt = new Font("Arial",Font.BOLD,20);	//字形
 		private final Font startfnt = new Font("Arial",Font.BOLD,40);	//字形
 		static JLabel lab=new JLabel(new ImageIcon("img/left.png"));	//建立標籤
 		static JLabel scorebar=new JLabel("Score:");	//建立標籤
+		static JLabel countdown=new JLabel("");	//建立標籤
 		static JLabel lstart=new JLabel("Press Space to Start");	//建立標籤
 		static JPanel pan=new JPanel();
 		
@@ -53,7 +50,7 @@ public class game extends JPanel implements ActionListener{
 //-----------------以下為需要重置的變數	
 		static int score=0;				//分數
 		static int lives=3;				//lives
-	
+		static int heat=0;
 		static boolean gamestart=false;
 		private boolean dead=false; //玩家是否死亡
 		static boolean p_up=false;		//現在按下哪個按件
@@ -76,23 +73,26 @@ public class game extends JPanel implements ActionListener{
 		static int redghost_x=offsetx+blocksize*9,redghost_y=offsety+blocksize*2;//紅鬼的位置
 		static int redghost_positionx=10,redghost_positiony=10;//紅鬼的格子
 		static int redface=1;		//紅鬼面對的方向 上1 下2 左3 右4
+		static int redmode=1;		//鬼模式
 		
 		static int pinkghost_x=offsetx+blocksize*12,pinkghost_y=offsety+blocksize*2;//粉紅鬼的位置
 		static int pinkghost_positionx=10,pinkghost_positiony=10;//粉紅鬼的格子
 		static int pinkface=1;		//粉紅鬼面對的方向 上1 下2 左3 右4
 		static int pinkghosttargetx=positionx,pinkghosttargety=positiony;	//粉紅鬼的目標
-		
+		static int pinkmode=1;		//鬼模式
+	
 		static int blueghost_x=offsetx+blocksize*6,blueghost_y=offsety+blocksize*17;//藍鬼的位置
 		static int blueghost_positionx=10,blueghost_positiony=10;//藍鬼的格子
 		static int blueface=1;		//藍鬼面對的方向 上1 下2 左3 右4
 		static int blueghosttargetx,blueghosttargety;	//藍鬼的目標
-
+		static int bluemode=1;		//鬼模式
 		
 		static int orangeghost_x=offsetx+blocksize*15,orangeghost_y=offsety+blocksize*17;//橘鬼的位置
 		static int orangeghost_positionx=10,orangeghost_positiony=10;//橘鬼的格子
 		static int orangeface=1;		//橘鬼面對的方向 上1 下2 左3 右4
 		static int orangeghosttargetx,orangeghosttargety;
 		static int orangemode=1;		//橘鬼模式
+		static boolean orangeevolution=false;
 								
 								
 		static int[] leveldata={					//關卡
@@ -146,8 +146,128 @@ public class game extends JPanel implements ActionListener{
 		public void heat(int gx,int gy){	//被鬼碰撞
 			if(Math.abs(gx-x)<(blocksize/2)&&Math.abs(gy-y)<(blocksize/2)){
 				System.out.println("heat");
+				heat=3;
 				death();
 			}
+		}
+		
+		public int escape(int gx,int gy,int face){
+			switch(leveldata[gx+20*(gy-1)-1]&15){		//判斷鬼該面朝哪
+				case 1:					//上有牆壁
+					if(face==1){				//鬼從下上來
+						if((gx-positionx)>=0){		//鬼在人右邊
+							face=4;
+						}else{
+							face=3;
+						}
+					}else if(face==4||face==3){			//鬼從左或右過來
+						if((gy-positiony)>0){			//人跟鬼
+							face=2;
+						}
+					}
+								
+					break;
+				case 2:					//下有牆壁
+					if(face==2){				//鬼從上下來
+						if((gx-positionx)>=0){		//鬼在人右邊
+							face=4;
+						}else{
+							face=3;
+						}
+					}else if(face==4||face==3){			//鬼從左或右過來
+						if((gy-positiony)<0){
+							face=1;
+						}
+					}						
+					break;	
+				case 4:					//左有牆壁
+					if(face==3){				//鬼從右過來
+						if((gy-positiony)>=0){		//鬼在人上面
+							face=2;
+						}else{
+							face=1;
+						}
+					}else if(face==1||face==2){			//鬼從上或下過來
+						if((gx-positionx)>0){
+							face=4;
+						}
+					}
+					break;
+				case 5:					//上左有牆壁
+					if(face==3){
+						face=2;
+					}else if(face==1){
+						face=4;
+					}
+					break;	
+				case 6:					//下左有牆壁
+					if(face==3){
+						face=1;
+					}else if(face==2){
+						face=4;
+						}
+						break;
+				case 8:					//右有牆壁
+					if(face==4){				//鬼從左過來
+						if((gy-positiony)>=0){		//鬼在人上面
+							face=2;
+						}else{
+							face=1;
+						}
+					}else if(face==1||face==2){			//鬼從上或下過來
+						if((gx-positionx)<0){
+							face=3;
+						}
+					}					
+					break;	
+				case 9:					//上右有牆壁
+					if(face==4){
+						face=2;
+					}else if(face==1){
+						face=3;
+					}					
+					break;	
+				case 10:				//下右有牆壁
+					if(face==4){
+						face=1;
+					}else if(face==2){
+						face=3;
+					}					
+					break;	//=====
+				case 12:	//左右有牆壁
+					
+					if(face==1&&(gy-positiony)>0){
+						face=2;
+					}else if(face==2&&(gy-positiony)<0){
+						face=1;
+					}
+					break;
+				case 3:
+				if(face==3&&(gx-positionx)<0){
+					face=4;
+				}else if(face==4&&(gx-positionx)>0){
+					face=3;
+				}
+					break;
+				case 0:					//十字路口				
+					if(face==3||face==4){				//面對左或右
+						if((gy-positiony)<=0){		//鬼在人上面
+							face=1;
+						}else if((gy-positiony)>=0){	//鬼在人下面
+							face=2;
+						}
+					}else{									//面對上或下
+						if((gx-positionx)<=0){		//鬼在人左邊
+							face=3;
+						}else if((gx-positionx)>=0){	//鬼在人右邊
+							face=4;
+						}
+					}
+					
+					
+					break;	
+			}			
+			return face;
 		}
 
 		
@@ -159,110 +279,120 @@ public class game extends JPanel implements ActionListener{
 				redghost_positionx=(redghost_x-offsetx)/blocksize;		//判斷鬼的位置
 				redghost_positiony=(redghost_y-offsety)/blocksize;
 				
-				if(((redghost_y-offsety)%blocksize)==0&&((redghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
-				
-					switch(leveldata[redghost_positionx+20*(redghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
-						case 1:					//上有牆壁
-							if(redface==1){				//鬼從下上來
-								if((redghost_positionx-positionx)>=0){		//鬼在人右邊
-									redface=3;
-								}else{
+				if(redmode==1){
+					if(((redghost_y-offsety)%blocksize)==0&&((redghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
+					
+						switch(leveldata[redghost_positionx+20*(redghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
+							case 1:					//上有牆壁
+								if(redface==1){				//鬼從下上來
+									if((redghost_positionx-positionx)>=0){		//鬼在人右邊
+										redface=3;
+									}else{
+										redface=4;
+									}
+								}else if(redface==4||redface==3){			//鬼從左或右過來
+									if((redghost_positiony-positiony)<0){
+										redface=2;
+									}
+								}
+		
+								
+								break;
+							case 2:					//下有牆壁
+								if(redface==2){				//鬼從上下來
+									if((redghost_positionx-positionx)>=0){		//鬼在人右邊
+										redface=3;
+									}else{
+										redface=4;
+									}
+								}else if(redface==4||redface==3){			//鬼從左或右過來
+									if((redghost_positiony-positiony)>0){
+										redface=1;
+									}
+								}						
+								break;	
+							case 4:					//左有牆壁
+								if(redface==3){				//鬼從右過來
+									if((redghost_positiony-positiony)<=0){		//鬼在人上面
+										redface=2;
+									}else{
+										redface=1;
+									}
+								}else if(redface==1||redface==2){			//鬼從上或下過來
+									if((redghost_positionx-positionx)<0){
+										redface=4;
+									}
+								}
+								break;
+							case 5:					//上左有牆壁
+								if(redface==3){
+									redface=2;
+								}else if(redface==1){
 									redface=4;
 								}
-							}else if(redface==4||redface==3){			//鬼從左或右過來
-								if((redghost_positiony-positiony)<0){
-									redface=2;
-								}
-							}
-	
-							
-							break;
-						case 2:					//下有牆壁
-							if(redface==2){				//鬼從上下來
-								if((redghost_positionx-positionx)>=0){		//鬼在人右邊
-									redface=3;
-								}else{
+								break;	
+							case 6:					//下左有牆壁
+								if(redface==3){
+									redface=1;
+								}else if(redface==2){
 									redface=4;
 								}
-							}else if(redface==4||redface==3){			//鬼從左或右過來
-								if((redghost_positiony-positiony)>0){
-									redface=1;
-								}
-							}						
-							break;	
-						case 4:					//左有牆壁
-							if(redface==3){				//鬼從右過來
-								if((redghost_positiony-positiony)<=0){		//鬼在人上面
+								break;	
+							case 8:					//右有牆壁
+								if(redface==4){				//鬼從左過來
+									if((redghost_positiony-positiony)<=0){		//鬼在人上面
+										redface=2;
+									}else{
+										redface=1;
+									}
+								}else if(redface==1||redface==2){			//鬼從上或下過來
+									if((redghost_positionx-positionx)>0){
+										redface=3;
+									}
+								}					
+								break;	
+							case 9:					//上右有牆壁
+								if(redface==4){
 									redface=2;
-								}else{
-									redface=1;
-								}
-							}else if(redface==1||redface==2){			//鬼從上或下過來
-								if((redghost_positionx-positionx)<0){
-									redface=4;
-								}
-							}
-							break;
-						case 5:					//上左有牆壁
-							if(redface==3){
-								redface=2;
-							}else if(redface==1){
-								redface=4;
-							}
-							break;	
-						case 6:					//下左有牆壁
-							if(redface==3){
-								redface=1;
-							}else if(redface==2){
-								redface=4;
-							}
-							break;	
-						case 8:					//右有牆壁
-							if(redface==4){				//鬼從左過來
-								if((redghost_positiony-positiony)<=0){		//鬼在人上面
-									redface=2;
-								}else{
-									redface=1;
-								}
-							}else if(redface==1||redface==2){			//鬼從上或下過來
-								if((redghost_positionx-positionx)>0){
+								}else if(redface==1){
 									redface=3;
-								}
-							}					
-							break;	
-						case 9:					//上右有牆壁
-							if(redface==4){
-								redface=2;
-							}else if(redface==1){
-								redface=3;
-							}					
-							break;	
-						case 10:				//下右有牆壁
-							if(redface==4){
-								redface=1;
-							}else if(redface==2){
-								redface=3;
-							}					
-							break;	
-						case 0:					//十字路口				
-							if(redface==3||redface==4){				//面對左或右
-								if((redghost_positiony-positiony)<=0){		//鬼在人上面
-									redface=2;
-								}else if((redghost_positiony-positiony)>=0){	//鬼在人下面
+								}					
+								break;	
+							case 10:				//下右有牆壁
+								if(redface==4){
 									redface=1;
-								}
-							}else{									//面對上或下
-								if((redghost_positionx-positionx)<=0){		//鬼在人左邊
-									redface=4;
-								}else if((redghost_positionx-positionx)>=0){	//鬼在人右邊
+								}else if(redface==2){
 									redface=3;
+								}					
+								break;	
+							case 0:					//十字路口				
+								if(redface==3||redface==4){				//面對左或右
+									if((redghost_positiony-positiony)<=0){		//鬼在人上面
+										redface=2;
+									}else if((redghost_positiony-positiony)>=0){	//鬼在人下面
+										redface=1;
+									}
+								}else{									//面對上或下
+									if((redghost_positionx-positionx)<=0){		//鬼在人左邊
+										redface=4;
+									}else if((redghost_positionx-positionx)>=0){	//鬼在人右邊
+										redface=3;
+									}
 								}
-							}
-							
-							
-							break;	
+								
+								
+								break;	
+						}
+					}					
+					
+					
+				}else if(redmode==2){
+					if(((redghost_y-offsety)%blocksize)==0&&((redghost_x-offsetx)%blocksize)==0){
+						redface=escape(redghost_positionx,redghost_positiony,redface);
 					}
+					
 				}
+
 			
 				
 			//	System.out.println(redface);
@@ -281,7 +411,12 @@ public class game extends JPanel implements ActionListener{
 							redghost_x=redghost_x+ghost_speed;
 							break;	
 					}
-				g.drawImage(redghost,redghost_x,redghost_y,this);
+				if(redmode==2){
+					g.drawImage(fright,redghost_x,redghost_y,this);
+				}else{
+					g.drawImage(redghost,redghost_x,redghost_y,this);
+				}
+			
 				
 				heat(redghost_x,redghost_y);
 			}
@@ -296,8 +431,6 @@ public class game extends JPanel implements ActionListener{
 				pinkghost_positionx=(pinkghost_x-offsetx)/blocksize;		//判斷鬼的位置
 				pinkghost_positiony=(pinkghost_y-offsety)/blocksize;
 				
-			/*	pinkghosttargetx=positionx;
-				pinkghosttargety=positiony;*/
 				switch(pacmanface){									//粉紅鬼的目標->玩家面前2格
 					case 1:
 						pinkghosttargety=positiony-2;
@@ -313,109 +446,119 @@ public class game extends JPanel implements ActionListener{
 						break;		
 				}
 				
-				if(((pinkghost_y-offsety)%blocksize)==0&&((pinkghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
-					switch(leveldata[pinkghost_positionx+20*(pinkghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
-						case 1:					//上有牆壁
-							if(pinkface==1){				//鬼從下上來
-								if((pinkghost_positionx-pinkghosttargetx)>=0){		//鬼在目標右邊
-									pinkface=3;
-								}else{
+				
+				if(pinkmode==1){
+					if(((pinkghost_y-offsety)%blocksize)==0&&((pinkghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
+						switch(leveldata[pinkghost_positionx+20*(pinkghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
+							case 1:					//上有牆壁
+								if(pinkface==1){				//鬼從下上來
+									if((pinkghost_positionx-pinkghosttargetx)>=0){		//鬼在目標右邊
+										pinkface=3;
+									}else{
+										pinkface=4;
+									}
+								}else if(pinkface==4||pinkface==3){			//鬼從左或右過來
+									if((pinkghost_positiony-pinkghosttargety)<0){
+										pinkface=2;
+									}
+								}
+		
+								
+								break;
+							case 2:					//下有牆壁
+								if(pinkface==2){				//鬼從上下來
+									if((pinkghost_positionx-pinkghosttargetx)>=0){		//鬼在目標右邊
+										pinkface=3;
+									}else{
+										pinkface=4;
+									}
+								}else if(pinkface==4||pinkface==3){			//鬼從左或右過來
+									if((pinkghost_positiony-pinkghosttargety)>0){
+										pinkface=1;
+									}
+								}						
+								break;	
+							case 4:					//左有牆壁
+								if(pinkface==3){				//鬼從右過來
+									if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
+										pinkface=2;
+									}else{
+										pinkface=1;
+									}
+								}else if(pinkface==1||pinkface==2){			//鬼從上或下過來
+									if((pinkghost_positionx-pinkghosttargetx)<0){
+										pinkface=4;
+									}
+								}
+								break;
+							case 5:					//上左有牆壁
+								if(pinkface==3){
+									pinkface=2;
+								}else if(pinkface==1){
 									pinkface=4;
 								}
-							}else if(pinkface==4||pinkface==3){			//鬼從左或右過來
-								if((pinkghost_positiony-pinkghosttargety)<0){
-									pinkface=2;
-								}
-							}
-	
-							
-							break;
-						case 2:					//下有牆壁
-							if(pinkface==2){				//鬼從上下來
-								if((pinkghost_positionx-pinkghosttargetx)>=0){		//鬼在目標右邊
-									pinkface=3;
-								}else{
+								break;	
+							case 6:					//下左有牆壁
+								if(pinkface==3){
+									pinkface=1;
+								}else if(pinkface==2){
 									pinkface=4;
 								}
-							}else if(pinkface==4||pinkface==3){			//鬼從左或右過來
-								if((pinkghost_positiony-pinkghosttargety)>0){
-									pinkface=1;
-								}
-							}						
-							break;	
-						case 4:					//左有牆壁
-							if(pinkface==3){				//鬼從右過來
-								if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
+								break;	
+							case 8:					//右有牆壁
+								if(pinkface==4){				//鬼從左過來
+									if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
+										pinkface=2;
+									}else{
+										pinkface=1;
+									}
+								}else if(pinkface==1||pinkface==2){			//鬼從上或下過來
+									if((pinkghost_positionx-pinkghosttargetx)>0){
+										pinkface=3;
+									}
+								}					
+								break;	
+							case 9:					//上右有牆壁
+								if(pinkface==4){
 									pinkface=2;
-								}else{
-									pinkface=1;
-								}
-							}else if(pinkface==1||pinkface==2){			//鬼從上或下過來
-								if((pinkghost_positionx-pinkghosttargetx)<0){
-									pinkface=4;
-								}
-							}
-							break;
-						case 5:					//上左有牆壁
-							if(pinkface==3){
-								pinkface=2;
-							}else if(pinkface==1){
-								pinkface=4;
-							}
-							break;	
-						case 6:					//下左有牆壁
-							if(pinkface==3){
-								pinkface=1;
-							}else if(pinkface==2){
-								pinkface=4;
-							}
-							break;	
-						case 8:					//右有牆壁
-							if(pinkface==4){				//鬼從左過來
-								if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
-									pinkface=2;
-								}else{
-									pinkface=1;
-								}
-							}else if(pinkface==1||pinkface==2){			//鬼從上或下過來
-								if((pinkghost_positionx-pinkghosttargetx)>0){
+								}else if(pinkface==1){
 									pinkface=3;
-								}
-							}					
-							break;	
-						case 9:					//上右有牆壁
-							if(pinkface==4){
-								pinkface=2;
-							}else if(pinkface==1){
-								pinkface=3;
-							}					
-							break;	
-						case 10:				//下右有牆壁
-							if(pinkface==4){
-								pinkface=1;
-							}else if(pinkface==2){
-								pinkface=3;
-							}					
-							break;	
-						case 0:					//十字路口				
-							if(pinkface==3||pinkface==4){				//面對左或右
-								if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
-									pinkface=2;
-								}else if((pinkghost_positiony-pinkghosttargety)>=0){	//鬼在目標下面
+								}					
+								break;	
+							case 10:				//下右有牆壁
+								if(pinkface==4){
 									pinkface=1;
-								}
-							}else{									//面對上或下
-								if((pinkghost_positionx-pinkghosttargetx)<=0){		//鬼在人左邊
-									pinkface=4;
-								}else if((pinkghost_positionx-pinkghosttargetx)>=0){	//鬼在目標右邊
+								}else if(pinkface==2){
 									pinkface=3;
+								}					
+								break;	
+							case 0:					//十字路口				
+								if(pinkface==3||pinkface==4){				//面對左或右
+									if((pinkghost_positiony-pinkghosttargety)<=0){		//鬼在目標上面
+										pinkface=2;
+									}else if((pinkghost_positiony-pinkghosttargety)>=0){	//鬼在目標下面
+										pinkface=1;
+									}
+								}else{									//面對上或下
+									if((pinkghost_positionx-pinkghosttargetx)<=0){		//鬼在人左邊
+										pinkface=4;
+									}else if((pinkghost_positionx-pinkghosttargetx)>=0){	//鬼在目標右邊
+										pinkface=3;
+									}
 								}
-							}
-							
-							
-							break;	
+								
+								
+								break;	
+						}
+					}					
+				}else if(pinkmode==2){
+					if(((pinkghost_y-offsety)%blocksize)==0&&((pinkghost_x-offsetx)%blocksize)==0){
+						pinkface=escape(pinkghost_positionx,pinkghost_positiony,pinkface);
 					}
+					
 				}
+
+
 			
 				
 					switch(pinkface){
@@ -432,7 +575,12 @@ public class game extends JPanel implements ActionListener{
 							pinkghost_x=pinkghost_x+ghost_speed;
 							break;	
 					}
-				g.drawImage(pinkghost,pinkghost_x,pinkghost_y,this);
+				if(pinkmode==2){
+					g.drawImage(fright,redghost_x,redghost_y,this);
+				}else{
+					g.drawImage(pinkghost,pinkghost_x,pinkghost_y,this);
+				}	
+				
 				
 				heat(pinkghost_x,pinkghost_y);
 			}
@@ -465,108 +613,116 @@ public class game extends JPanel implements ActionListener{
 				blueghosttargetx=2*blueghosttargetx-redghost_positionx;		//藍鬼的目標->紅鬼到玩家面前2格的兩倍距離
 				blueghosttargety=2*blueghosttargety-redghost_positiony;
 				
-				
-				if(((blueghost_y-offsety)%blocksize)==0&&((blueghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
-					switch(leveldata[blueghost_positionx+20*(blueghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
-						case 1:					//上有牆壁
-							if(blueface==1){				//鬼從下上來
-								if((blueghost_positionx-blueghosttargetx)>=0){		//鬼在目標右邊
-									blueface=3;
-								}else{
+				if(bluemode==1){
+					if(((blueghost_y-offsety)%blocksize)==0&&((blueghost_x-offsetx)%blocksize)==0){		//確保鬼會走完一個格子才轉身
+						switch(leveldata[blueghost_positionx+20*(blueghost_positiony-1)-1]&15){		//判斷鬼該面朝哪
+							case 1:					//上有牆壁
+								if(blueface==1){				//鬼從下上來
+									if((blueghost_positionx-blueghosttargetx)>=0){		//鬼在目標右邊
+										blueface=3;
+									}else{
+										blueface=4;
+									}
+								}else if(blueface==4||blueface==3){			//鬼從左或右過來
+									if((blueghost_positiony-blueghosttargety)<0){
+										blueface=2;
+									}
+								}
+		
+								
+								break;
+							case 2:					//下有牆壁
+								if(blueface==2){				//鬼從上下來
+									if((blueghost_positionx-blueghosttargetx)>=0){		//鬼在目標右邊
+										blueface=3;
+									}else{
+										blueface=4;
+									}
+								}else if(blueface==4||blueface==3){			//鬼從左或右過來
+									if((blueghost_positiony-blueghosttargety)>0){
+										blueface=1;
+									}
+								}						
+								break;	
+							case 4:					//左有牆壁
+								if(blueface==3){				//鬼從右過來
+									if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
+										blueface=2;
+									}else{
+										blueface=1;
+									}
+								}else if(blueface==1||blueface==2){			//鬼從上或下過來
+									if((blueghost_positionx-blueghosttargetx)<0){
+										blueface=4;
+									}
+								}
+								break;
+							case 5:					//上左有牆壁
+								if(blueface==3){
+									blueface=2;
+								}else if(blueface==1){
 									blueface=4;
 								}
-							}else if(blueface==4||blueface==3){			//鬼從左或右過來
-								if((blueghost_positiony-blueghosttargety)<0){
-									blueface=2;
-								}
-							}
-	
-							
-							break;
-						case 2:					//下有牆壁
-							if(blueface==2){				//鬼從上下來
-								if((blueghost_positionx-blueghosttargetx)>=0){		//鬼在目標右邊
-									blueface=3;
-								}else{
+								break;	
+							case 6:					//下左有牆壁
+								if(blueface==3){
+									blueface=1;
+								}else if(blueface==2){
 									blueface=4;
 								}
-							}else if(blueface==4||blueface==3){			//鬼從左或右過來
-								if((blueghost_positiony-blueghosttargety)>0){
-									blueface=1;
-								}
-							}						
-							break;	
-						case 4:					//左有牆壁
-							if(blueface==3){				//鬼從右過來
-								if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
+								break;	
+							case 8:					//右有牆壁
+								if(blueface==4){				//鬼從左過來
+									if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
+										blueface=2;
+									}else{
+										blueface=1;
+									}
+								}else if(blueface==1||blueface==2){			//鬼從上或下過來
+									if((blueghost_positionx-blueghosttargetx)>0){
+										blueface=3;
+									}
+								}					
+								break;	
+							case 9:					//上右有牆壁
+								if(blueface==4){
 									blueface=2;
-								}else{
-									blueface=1;
-								}
-							}else if(blueface==1||blueface==2){			//鬼從上或下過來
-								if((blueghost_positionx-blueghosttargetx)<0){
-									blueface=4;
-								}
-							}
-							break;
-						case 5:					//上左有牆壁
-							if(blueface==3){
-								blueface=2;
-							}else if(blueface==1){
-								blueface=4;
-							}
-							break;	
-						case 6:					//下左有牆壁
-							if(blueface==3){
-								blueface=1;
-							}else if(blueface==2){
-								blueface=4;
-							}
-							break;	
-						case 8:					//右有牆壁
-							if(blueface==4){				//鬼從左過來
-								if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
-									blueface=2;
-								}else{
-									blueface=1;
-								}
-							}else if(blueface==1||blueface==2){			//鬼從上或下過來
-								if((blueghost_positionx-blueghosttargetx)>0){
+								}else if(blueface==1){
 									blueface=3;
-								}
-							}					
-							break;	
-						case 9:					//上右有牆壁
-							if(blueface==4){
-								blueface=2;
-							}else if(blueface==1){
-								blueface=3;
-							}					
-							break;	
-						case 10:				//下右有牆壁
-							if(blueface==4){
-								blueface=1;
-							}else if(blueface==2){
-								blueface=3;
-							}					
-							break;	
-						case 0:					//十字路口				
-							if(blueface==3||blueface==4){				//面對左或右
-								if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
-									blueface=2;
-								}else if((blueghost_positiony-blueghosttargety)>=0){	//鬼在目標下面
+								}					
+								break;	
+							case 10:				//下右有牆壁
+								if(blueface==4){
 									blueface=1;
-								}
-							}else{									//面對上或下
-								if((blueghost_positionx-blueghosttargetx)<=0){		//鬼在人左邊
-									blueface=4;
-								}else if((blueghost_positionx-blueghosttargetx)>=0){	//鬼在目標右邊
+								}else if(blueface==2){
 									blueface=3;
+								}					
+								break;	
+							case 0:					//十字路口				
+								if(blueface==3||blueface==4){				//面對左或右
+									if((blueghost_positiony-blueghosttargety)<=0){		//鬼在目標上面
+										blueface=2;
+									}else if((blueghost_positiony-blueghosttargety)>=0){	//鬼在目標下面
+										blueface=1;
+									}
+								}else{									//面對上或下
+									if((blueghost_positionx-blueghosttargetx)<=0){		//鬼在人左邊
+										blueface=4;
+									}else if((blueghost_positionx-blueghosttargetx)>=0){	//鬼在目標右邊
+										blueface=3;
+									}
 								}
-							}
-							break;	
+								break;	
+						}
+					}					
+				}else if(bluemode==2){
+					if(((blueghost_y-offsety)%blocksize)==0&&((blueghost_x-offsetx)%blocksize)==0){
+						blueface=escape(blueghost_positionx,blueghost_positiony,blueface);
 					}
+					
 				}
+
+				
 			
 				
 					switch(blueface){
@@ -583,7 +739,13 @@ public class game extends JPanel implements ActionListener{
 							blueghost_x=blueghost_x+ghost_speed;
 							break;	
 					}
-				g.drawImage(blueghost,blueghost_x,blueghost_y,this);
+					
+				if(bluemode==2){
+					g.drawImage(fright,redghost_x,redghost_y,this);
+				}else{
+					g.drawImage(blueghost,pinkghost_x,pinkghost_y,this);
+				}
+				
 
 				heat(blueghost_x,blueghost_y);
 			}
@@ -708,6 +870,11 @@ public class game extends JPanel implements ActionListener{
       					}
 						
 					}
+				}else if(orangemode==2){
+					if(((orangeghost_y-offsety)%blocksize)==0&&((orangeghost_x-offsetx)%blocksize)==0){
+						orangeface=escape(orangeghost_positionx,orangeghost_positiony,orangeface);
+					}
+					
 				}
 				
 				switch(orangeface){
@@ -750,9 +917,10 @@ public class game extends JPanel implements ActionListener{
 		public game(){					//建構元
 			setBackground(Color.black);	
 		    addKeyListener(new kadapter());
-
+			setcountdown();
 			setlstart();
 		    this.add(lstart);
+		    this.add(countdown);
 			drawscorebar();
 			
 		}
@@ -765,7 +933,12 @@ public class game extends JPanel implements ActionListener{
 			
 		}
 		
-		
+		public void setcountdown(){
+			countdown.setFont(startfnt);
+		    countdown.setForeground(Color.yellow);
+		    countdown.setLocation(200,420);
+			
+		}
 	
 		
 		public void update(Graphics g){					//參考資料https://blog.csdn.net/weixin_50679163/article/details/119490947		利用雙緩存技術解決角色閃爍
@@ -885,14 +1058,28 @@ public class game extends JPanel implements ActionListener{
 			orangeface=1;		//橘鬼面對的方向 上1 下2 左3 右4
 
 			orangemode=1;		//橘鬼模式
-			
-			leveldata=innitleveldata;
+			pinkmode=1;		//鬼模式
+			redmode=1;		//鬼模式
+			bluemode=1;		//鬼模式
+			orangeevolution=false;			
+			for(int i=0;i<399;i++){
+				leveldata[i]=innitleveldata[i];
+			}
 			
 			
 		}
-		public void dying(){				//只重設位置 並暫停兩秒
+		public void dying(){				//只重設位置
+			lstart.setText("Press Space to Start");
 			x=offsetx+blocksize*10;y=offsety+blocksize*12;				//pacman位置
 			positionx=10;positiony=12;				//pacman位置(格子)
+			p_up=false;		//現在按下哪個按件
+			p_down=false;
+			p_left=false;
+			p_right=false;
+			pinkmode=1;		//鬼模式
+			redmode=1;		//鬼模式
+			bluemode=1;		//鬼模式
+			orangeevolution=false;
 			redghost_x=offsetx+blocksize*9;redghost_y=offsety+blocksize*2;//紅鬼的位置
 			redghost_positionx=10;redghost_positiony=10;//紅鬼的格子
 			pinkghost_x=offsetx+blocksize*12;pinkghost_y=offsety+blocksize*2;//粉紅鬼的位置
@@ -900,28 +1087,7 @@ public class game extends JPanel implements ActionListener{
 			orangeghost_x=offsetx+blocksize*15;orangeghost_y=offsety+blocksize*17;//橘鬼的位置
 			blueghost_positionx=10;blueghost_positiony=10;//藍鬼的格子
 			pinkghost_positionx=10;pinkghost_positiony=10;//粉紅鬼的格子
-							
-			try{			//倒數部分須修正
-	        	lstart.setText("3");
-	        	this.add(lstart);	
-	        	System.out.println("awewae");
-	        	repaint();			
-	        	Thread.sleep(1000);
-	        }catch(Exception e){
-	        }
-	        try{
-	        	lstart.setText("2");
-	        	repaint();
-	        	Thread.sleep(1000);
-	        }catch(Exception e){
-	        }
-	        try{
-	        	lstart.setText("1");
-	        	repaint();
-	        	Thread.sleep(1000);
-	        }catch(Exception e){
-	        }
-	        lstart.setText("");
+			gamestart=false;
 		}
 		
 		
@@ -952,6 +1118,8 @@ public class game extends JPanel implements ActionListener{
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
+			
+			
 			
 			redghost(graphics);
 			pinkghost(graphics);
@@ -1009,16 +1177,27 @@ public class game extends JPanel implements ActionListener{
 
 								break;
 							case 2:		//幫鬼加速
+								while(((redghost_y-offsety)%blocksize)!=0&&((redghost_x-offsetx)%blocksize)!=0){	//確保鬼走完這格才加速
+									if(((redghost_y-offsety)%blocksize)!=0&&((redghost_x-offsetx)%blocksize)!=0){
+										break;
+									}
+								}
 								ghost_speed=10;		
 									
 		
 								break;
 							case 3:		//把橘鬼變mode3
 								orangemode=3;
-			
+								orangeevolution=true;
 								break;	
 						}
 						trollleft=false;
+					}else{					//吃到真的大力丸
+						redmode=2;
+						pinkmode=2;
+						bluemode=2;
+						orangemode=2;		
+						//countdown();
 					}
 					
 					orangeleft--;
