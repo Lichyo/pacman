@@ -11,7 +11,7 @@ class pacman extends JFrame{
 	
 	public pacman(){
 		
-		setTitle("§p∫Î∆F");  
+		setTitle("pacman");  
 		setSize(blocksize*20+reservex*2,blocksize*20+ reservey*2);
 		
 		setLocationRelativeTo(null);
@@ -19,7 +19,6 @@ class pacman extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		game a=new game();
-	//	a.drawscorebar();
 		a.setFocusable(true);
 		add(a);
 		setVisible(true);
@@ -34,9 +33,4 @@ class pacman extends JFrame{
 	
 	
 }
-
-
-
-
-
 
