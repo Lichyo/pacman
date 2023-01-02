@@ -19,6 +19,7 @@ class pacman extends JFrame{
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		game a=new game();
+		
 		a.setFocusable(true);
 		add(a);
 		setVisible(true);
@@ -26,7 +27,6 @@ class pacman extends JFrame{
 	
 	public static void main(String args[]){    	
 		pacman b=new pacman();
-		b.setVisible(true);
 		
     }
 	
