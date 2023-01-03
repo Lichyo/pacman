@@ -7,12 +7,14 @@ import java.awt.event.*;
 public class game extends JPanel implements ActionListener{
 
 		private final Font fnt = new Font("Arial",Font.BOLD,20);	//字形
+		private final Font pacfnt = new Font("Arial",Font.BOLD,15);	//大力丸倒數字形
 		private final Font startfnt = new Font("Arial",Font.BOLD,40);	//字形
+		static JLabel count=new JLabel("");	//建立標籤(pacman倒數)
 		static JLabel lab=new JLabel(new ImageIcon("img/left.png"));	//建立標籤(pacman)
 		static JLabel scorebar=new JLabel("Score:");	//建立標籤(分數)
 		static JLabel highest=new JLabel("Highest Score: 0");	//建立標籤(最高分)
 		static JLabel last=new JLabel("Last Score: 0");	//建立標籤(上次得分)
-
+		
 		static JLabel lstart=new JLabel("Press Space to Start");	//建立標籤(開始提示文字)
 		static JPanel pan=new JPanel();
 		long starttime, currenttime;
@@ -23,6 +25,7 @@ public class game extends JPanel implements ActionListener{
 		static	ImageIcon ileft=new ImageIcon("img/left.png");
 		static	ImageIcon iright=new ImageIcon("img/right.png");
 		static  ImageIcon heart=new ImageIcon("img/right.png");
+		static  ImageIcon cherry=new ImageIcon("img/cherry.png");
 		
 		static  Image redghost=new ImageIcon("img/redghost.png").getImage();//鬼的圖片
 		static  Image pinkghost=new ImageIcon("img/pinkghost.png").getImage();//鬼的圖片
@@ -40,10 +43,11 @@ public class game extends JPanel implements ActionListener{
 	
 		static int randomx=10;
 		static int randomy=12;
-	
-		static int ghost_speed=6;		//鬼的速度	
+
 		static int speed=10;			//pacman速度
 //-----------------以下為需要重置的變數	
+		static int ghost_speed=6;		//鬼的速度	
+		static int clearlevel=0;
 		static int score=0;				//分數
 		static int lives=3;				//lives
 		static int heat=0;
@@ -981,12 +985,16 @@ public class game extends JPanel implements ActionListener{
 		
 //--------------------------------		
 		public game(){					//建構元
+			count.setForeground(Color.red);
+			count.setFont(pacfnt);
+
 			drawhighest();
 			drawlast();
 			setBackground(Color.black);	
 		    addKeyListener(new kadapter());
 			setlstart();
 		    this.add(lstart);
+		    this.add(count);
 			drawscorebar();
 			
 		}
@@ -1002,10 +1010,20 @@ public class game extends JPanel implements ActionListener{
 
 			
 		public void levelclear(){		//檢查關卡是否結束
-			if(dotleft==0){
+			if(dotleft==0){	//如果關卡結束
 				reset();
+				clearlevel++;
 			}
 		}
+		
+		public void drawcherry(Graphics2D g){		//畫出櫻桃
+			int cx=blocksize+5,cy=720;
+			for(int i=clearlevel;i>0;i--){
+				g.drawImage(cherry.getImage(),30+cx*(i-1),cy,this);
+			}
+		}
+		
+
 		
 		
 		public void update(Graphics g){					//利用雙緩存技術解決角色閃爍     參考資料https://blog.csdn.net/weixin_50679163/article/details/119490947		
@@ -1108,8 +1126,15 @@ public class game extends JPanel implements ActionListener{
 		}
 			
 		public void reset(){						//把關卡全部重置 (吃完or死透)
+			count.setText("");
 			lstart.setText("Press Space to Start");
 			lab.setIcon(null);
+			if(clearlevel>20){
+				ghost_speed=10;
+			}else{
+				ghost_speed=6;
+			}
+			
 			lives=3;				//lives
 			gamestart=false;
 			dead=false; //玩家是否死亡
@@ -1148,6 +1173,7 @@ public class game extends JPanel implements ActionListener{
 			
 		}
 		public void dying(){				//只重設位置
+			count.setText("");
 			lstart.setText("Press Space to Start");
 			lab.setIcon(null);
 			x=offsetx+blocksize*10;y=offsety+blocksize*12;				//pacman位置
@@ -1180,6 +1206,7 @@ public class game extends JPanel implements ActionListener{
 					highestscore=score;
 				}
 				lastscore=score;
+				clearlevel=0;
 				score=0;
 				reset();		
 			}else{
@@ -1189,6 +1216,7 @@ public class game extends JPanel implements ActionListener{
 		}
 		
 		public void recover(){		//鬼恢復
+			count.setText("");
 			power=false;
 			pinkmode=1;		//鬼模式
 			redmode=1;		//鬼模式
@@ -1222,10 +1250,13 @@ public class game extends JPanel implements ActionListener{
 			blueghost(graphics);
 			orangeghost(graphics);
 			if(power){
+				count.setLocation(x+4,y+3);
+				count.setText(String.valueOf(8-(currenttime-starttime)/1000));
 				currenttime=System.currentTimeMillis();
 				if((currenttime-starttime)>=8000){
 					recover();
 				}
+				
 			}
 			drawscorebar();
 			drawhighest();
@@ -1234,6 +1265,7 @@ public class game extends JPanel implements ActionListener{
 			drawpacman();
 			
 			drawhearts(graphics2D);
+			drawcherry(graphics2D);
 			levelclear();
 			repaint();						//重複再畫一次	-->會使此函數一直重複							
 			
@@ -1298,13 +1330,15 @@ public class game extends JPanel implements ActionListener{
 						}
 						trollleft=false;
 					}else{					//吃到真的大力丸
-						starttime=System.currentTimeMillis();	//紀錄時間
-						power=true;
-						redmode=2;
-						pinkmode=2;
-						bluemode=2;
-						if(!orangeevolution){
-							orangemode=2;		
+						if(clearlevel<=10){
+							starttime=System.currentTimeMillis();	//紀錄時間
+							power=true;
+							redmode=2;
+							pinkmode=2;
+							bluemode=2;
+							if(!orangeevolution){
+								orangemode=2;		
+							}	
 						}
 					}
 					
@@ -1342,7 +1376,6 @@ public class game extends JPanel implements ActionListener{
 					
 					y=y-speed;		
 	 				if(((y-offsety)%blocksize)==(blocksize/3)){
-	 		//			System.out.println("上");
 	 					positiony=positiony-1;
 	 				}
 				}
@@ -1355,7 +1388,6 @@ public class game extends JPanel implements ActionListener{
 	 				
 	 				y=y+speed;
 	 				if(((y-offsety)%blocksize)==(2*blocksize/3)){			//判斷現在格子
-	 		//			System.out.println("下");
 	 					positiony=positiony+1;
 	 				}
  					
@@ -1369,7 +1401,6 @@ public class game extends JPanel implements ActionListener{
 					
 					x=x-speed;
 					if(((x-offsetx)%blocksize)==(blocksize/3)){
-			//			System.out.println("左");
 	 					positionx=positionx-1;
 	 				}	
 				}
@@ -1382,7 +1413,6 @@ public class game extends JPanel implements ActionListener{
 					
 					x=x+speed;
 					if(((x-offsetx)%blocksize)==(2*blocksize/3)){
-			//			System.out.println("右");
 	 					positionx=positionx+1;
 	 				}
 				}
